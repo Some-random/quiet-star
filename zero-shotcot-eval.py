@@ -62,10 +62,10 @@ def model_init(params):
     tokenizer.padding_side = "right"
     tokenizer.pad_token_id = tokenizer.eos_token_id
     special_tokens_to_add = []
-    if model.use_start_thought_token:
-        special_tokens_to_add.append("<|startthought|>")
-    if model.use_end_thought_token:
-        special_tokens_to_add.append("<|endthought|>")
+    # if model.use_start_thought_token:
+    special_tokens_to_add.append("<|startthought|>")
+    # if model.use_end_thought_token:
+    special_tokens_to_add.append("<|endthought|>")
     if special_tokens_to_add:
         tokenizer.add_special_tokens({"additional_special_tokens": special_tokens_to_add})
         model.resize_token_embeddings(len(tokenizer))
@@ -114,13 +114,14 @@ end_question = args.device_batch_size * (args.batch_idx + 1)
 # Iterate over the questions for the current device
 batch_size = 1
 for batch_start in tqdm(range(start_question, min(args.max_idx, end_question), batch_size)):
-    last_save_folder = f"answers/eval_{'baseline' if args.baseline else 'ft'}_{args.n_ahead if not args.baseline else 1}_{args.temp}_{args.n_votes}"
-    if os.path.exists(last_save_folder + f"/{batch_start}.txt"):
-        print(f"Skipping {batch_start}")
-        continue
+    # last_save_folder = f"answers/eval_{'baseline' if args.baseline else 'ft'}_{args.n_ahead if not args.baseline else 1}_{args.temp}_{args.n_votes}"
+    # if os.path.exists(last_save_folder + f"/{batch_start}.txt"):
+    #     print(f"Skipping {batch_start}")
+    #     continue
     extracted_answers = []
     for vote_idx in range(1, args.n_votes + 1):
-        folder_name = f"answers/eval_{'baseline' if args.baseline else 'ft'}_{args.n_ahead if not args.baseline else 1}_{args.temp}_{vote_idx}"
+        # Make the output folder name more clear
+        folder_name = f"answers_with_thought/eval_{'baseline' if args.baseline else 'ft'}_{args.n_ahead if not args.baseline else 1}_head_{args.temp}_vote_id_{vote_idx}"
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
 

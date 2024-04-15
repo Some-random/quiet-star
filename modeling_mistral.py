@@ -1308,6 +1308,7 @@ class MistralForCausalLM(MistralPreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
+        original_input = str
     ):
         batch_size, seq_len = input_ids.shape
 
@@ -1364,6 +1365,11 @@ class MistralForCausalLM(MistralPreTrainedModel):
         end_thought_token_id = self.tokenizer.convert_tokens_to_ids("<|endthought|>")
         input_ids = torch.cat([input_ids, torch.tensor([[end_thought_token_id]] * batch_size).to(input_ids.device)], dim=-1)
         seq_len += 1
+        
+        # original_input is the original input sequence without the start and end thought tokens
+        thought = self.tokenizer.batch_decode(input_ids)[0].split("<|startthought|>")[-1].split("<|endthought|>")[0]
+        current_output = self.tokenizer.batch_decode(input_ids)[0].split("<|startthought|>")[0].split(original_input)[1]
+        print("current output: " + repr(current_output) + '\tthought: ' + repr(thought))
 
         # Update the attention mask
         if attention_mask is not None:

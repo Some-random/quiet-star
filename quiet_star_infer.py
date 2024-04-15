@@ -52,7 +52,6 @@ input_ids = tokenizer.encode(input, return_tensors="pt").to(model.device)
 
 # output = model.generate(input_ids, max_length=50)
 
-
 def generate(input_ids, attention_mask, model, temp, max_length=20):
     with torch.no_grad():
         finished_generating = torch.zeros(len(input_ids), dtype=torch.bool, device=input_ids.device)
@@ -64,13 +63,19 @@ def generate(input_ids, attention_mask, model, temp, max_length=20):
             )['logits']
             # Mask out the start and end thought tokens so we don't accidentally sample them
             new_ids[:, :, model.tokenizer.vocab_size:] = -float("inf")
+
+            # first generate thought, then generate the next token, just print thoughts, isn't involved in the generation
+            new_ids_with_thoughts = model.infer(
+                input_ids[~finished_generating],
+                attention_mask=attention_mask[~finished_generating],
+                original_input=input
+            )
+
             for list_idx, answer_idx in enumerate((~finished_generating).nonzero(as_tuple=True)[0]):
                 # Find the index of the last token that is not padding
                 base_answer_ids = input_ids[answer_idx]
                 new_answer_ids = new_ids[list_idx]
                 last_token_idx = (base_answer_ids != model.tokenizer.pad_token_id).nonzero(as_tuple=True)[0].max()
-
-
                 new_ids_sampled = torch.multinomial(
                         torch.nn.functional.softmax(new_answer_ids[last_token_idx] / temp, dim=-1), 1)
                 # Assign the new id to the last token
@@ -88,10 +93,9 @@ def generate(input_ids, attention_mask, model, temp, max_length=20):
                 break
     return input_ids, attention_mask
 
-
+print("input: " + input)
 out = generate(input_ids, torch.ones_like(input_ids), model, 0.9, max_length=500)
-
-
+print()
 print(tokenizer.decode(out[0][0], skip_special_tokens=False))
 
 print("hi")
