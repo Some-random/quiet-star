@@ -17,7 +17,7 @@ n_ahead_talk = 1
 merged_talk_heads = True
 
 model = AutoModelForCausalLM.from_pretrained(model_path,
-                                             load_in_8bit=True,
+                                            #  load_in_8bit=True,
                                              max_thoughts=n_ahead + n_ahead_talk + 1,
                                              merged_talk_heads=merged_talk_heads,
                                              merged_lm_and_talk_heads=False,
@@ -28,6 +28,7 @@ model = AutoModelForCausalLM.from_pretrained(model_path,
                                              use_complex_think_head=False,
                                              use_complex_talk_head=True,
                                              use_weighted_talk_head=True,
+                                             device_map = 'cuda:1'
                                              )
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 
